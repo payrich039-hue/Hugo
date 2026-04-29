@@ -441,14 +441,17 @@ def api_get_status():
 
 # ==================== MAIN ====================
 if __name__ == '__main__':
+    # Pega a porta do ambiente (Render define automaticamente)
+    port = int(os.environ.get('PORT', 5000))
+    
     print("=" * 50)
     print("🚀 CHECKER WEB INICIADO COM SUCESSO!")
     print("=" * 50)
-    print(f"📍 Acesse no navegador: http://localhost:5000")
+    print(f"📍 Acesse no navegador: http://localhost:{port}")
     print(f"⚙️ Threads configuradas: {max_threads}")
-    print(f"🌐 Rotação de proxy: A cada 5 requisições")
-    print(f"📁 HTML está na mesma pasta que o app.py")
     print("=" * 50)
-    print("⚠️  Pressione CTRL+C para parar o servidor")
-    print("=" * 50)
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    
+    # Importar os no topo do arquivo
+    import os
+    
+    app.run(debug=False, host='0.0.0.0', port=port)
