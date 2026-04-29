@@ -19,7 +19,7 @@
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
         }
 
@@ -34,37 +34,19 @@
             margin-bottom: 10px;
         }
 
-        .header p {
-            font-size: 1.1em;
-            opacity: 0.9;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
         .card {
             background: white;
             border-radius: 15px;
             padding: 20px;
+            margin-bottom: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
 
         .card h2 {
             color: #333;
             margin-bottom: 15px;
-            font-size: 1.5em;
             border-bottom: 2px solid #667eea;
             padding-bottom: 10px;
-        }
-
-        .card h3 {
-            color: #555;
-            margin: 15px 0 10px 0;
-            font-size: 1.1em;
         }
 
         textarea {
@@ -83,21 +65,6 @@
             border-color: #667eea;
         }
 
-        input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-family: monospace;
-            font-size: 14px;
-            margin-bottom: 15px;
-        }
-
-        input[type="text"]:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
         .btn {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -107,7 +74,6 @@
             cursor: pointer;
             font-size: 14px;
             font-weight: bold;
-            transition: transform 0.2s, box-shadow 0.2s;
             margin-right: 10px;
             margin-bottom: 10px;
         }
@@ -119,75 +85,6 @@
 
         .btn-danger {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-        }
-
-        .btn-warning {
-            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .status-approved {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-declined {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .status-3ds {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .results-container {
-            max-height: 500px;
-            overflow-y: auto;
-        }
-
-        .result-item {
-            background: #f8f9fa;
-            border-left: 4px solid;
-            padding: 12px;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            font-size: 13px;
-        }
-
-        .result-item.approved {
-            border-left-color: #28a745;
-        }
-
-        .result-item.declined {
-            border-left-color: #dc3545;
-        }
-
-        .result-item.three-ds {
-            border-left-color: #ffc107;
-        }
-
-        .result-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
-
-        .result-details {
-            color: #666;
-            font-size: 12px;
         }
 
         .stats {
@@ -212,20 +109,29 @@
         .stat-label {
             font-size: 0.9em;
             color: #666;
-            margin-top: 5px;
         }
 
-        .progress {
-            display: none;
-            text-align: center;
-            padding: 20px;
+        .result-item {
             background: #f8f9fa;
-            border-radius: 10px;
-            margin-top: 20px;
+            border-left: 4px solid;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 8px;
         }
 
-        .progress.active {
-            display: block;
+        .result-item.approved {
+            border-left-color: #28a745;
+        }
+
+        .result-item.declined {
+            border-left-color: #dc3545;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: bold;
         }
 
         .spinner {
@@ -243,6 +149,16 @@
             100% { transform: rotate(360deg); }
         }
 
+        .progress {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .progress.active {
+            display: block;
+        }
+
         .tab-buttons {
             display: flex;
             gap: 10px;
@@ -252,17 +168,17 @@
         .tab-btn {
             flex: 1;
             padding: 10px;
-            background: #e0e0e0;
+            background: rgba(255,255,255,0.2);
             border: none;
             cursor: pointer;
             border-radius: 8px;
             font-weight: bold;
-            transition: all 0.3s;
+            color: white;
         }
 
         .tab-btn.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: white;
+            color: #667eea;
         }
 
         .tab-content {
@@ -271,17 +187,6 @@
 
         .tab-content.active {
             display: block;
-        }
-
-        @media (max-width: 768px) {
-            .grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .btn {
-                width: 100%;
-                margin-right: 0;
-            }
         }
     </style>
 </head>
@@ -293,37 +198,17 @@
         </div>
 
         <div class="tab-buttons">
-            <button class="tab-btn active" onclick="switchTab('single')">🔍 Verificação Única</button>
-            <button class="tab-btn" onclick="switchTab('mass')">📊 Verificação em Massa</button>
+            <button class="tab-btn active" onclick="switchTab('mass')">📊 Verificação em Massa</button>
             <button class="tab-btn" onclick="switchTab('proxy')">🌐 Gerenciar Proxies</button>
         </div>
 
-        <!-- Single Check Tab -->
-        <div id="single-tab" class="tab-content active">
-            <div class="grid">
-                <div class="card">
-                    <h2>🔍 Verificação Única</h2>
-                    <input type="text" id="single-card" placeholder="Ex: 4111111111111111|12|2026|123">
-                    <button class="btn" onclick="checkSingle()">Verificar Cartão</button>
-                </div>
-            </div>
-            <div id="single-result" class="card" style="display: none;">
-                <h2>📋 Resultado da Verificação</h2>
-                <div id="single-result-content"></div>
-            </div>
-        </div>
-
         <!-- Mass Check Tab -->
-        <div id="mass-tab" class="tab-content">
-            <div class="grid">
-                <div class="card">
-                    <h2>📊 Verificação em Massa</h2>
-                    <textarea id="mass-cards" rows="10" placeholder="Digite os cartões aqui (um por linha)&#10;Ex:&#10;4111111111111111|12|2026|123&#10;5111111111111111|01|2027|456&#10;371111111111111|03|2025|789"></textarea>
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <button class="btn" onclick="startMassCheck()">▶️ Iniciar Verificação</button>
-                        <button class="btn btn-danger" onclick="clearResults()">🗑️ Limpar Resultados</button>
-                    </div>
-                </div>
+        <div id="mass-tab" class="tab-content active">
+            <div class="card">
+                <h2>📊 Verificação em Massa</h2>
+                <textarea id="mass-cards" rows="10" placeholder="Digite os cartões aqui (um por linha)&#10;Ex:&#10;4111111111111111|12|2026|123&#10;5111111111111111|01|2027|456"></textarea>
+                <button class="btn" onclick="startMassCheck()">▶️ Iniciar Verificação</button>
+                <button class="btn btn-danger" onclick="clearResults()">🗑️ Limpar Resultados</button>
             </div>
 
             <div class="stats" id="stats" style="display: none;">
@@ -348,21 +233,19 @@
 
             <div class="card" id="results-container" style="display: none;">
                 <h2>📋 Resultados da Verificação</h2>
-                <div class="results-container" id="results-list"></div>
+                <div id="results-list"></div>
             </div>
         </div>
 
         <!-- Proxy Management Tab -->
         <div id="proxy-tab" class="tab-content">
-            <div class="grid">
-                <div class="card">
-                    <h2>🌐 Adicionar Proxies</h2>
-                    <textarea id="proxy-list" rows="8" placeholder="Formatos suportados:&#10;http://user:pass@host:port&#10;user:pass@host:port&#10;host:port&#10;http://host:port"></textarea>
-                    <button class="btn" onclick="addProxies()">➕ Adicionar Proxies</button>
-                    <button class="btn btn-success" onclick="testProxies()">🧪 Testar Proxies</button>
-                    <button class="btn btn-warning" onclick="viewProxies()">👁️ Ver Proxies</button>
-                    <button class="btn btn-danger" onclick="deleteProxies()">🗑️ Deletar Todos</button>
-                </div>
+            <div class="card">
+                <h2>🌐 Gerenciar Proxies</h2>
+                <textarea id="proxy-list" rows="8" placeholder="Formatos:&#10;http://user:pass@host:port&#10;user:pass@host:port&#10;host:port"></textarea>
+                <button class="btn" onclick="addProxies()">➕ Adicionar Proxies</button>
+                <button class="btn" onclick="testProxies()">🧪 Testar Proxies</button>
+                <button class="btn" onclick="viewProxies()">👁️ Ver Proxies</button>
+                <button class="btn btn-danger" onclick="deleteProxies()">🗑️ Deletar Todos</button>
             </div>
             <div id="proxy-result" class="card" style="display: none;">
                 <h2>📋 Informação dos Proxies</h2>
@@ -372,12 +255,6 @@
     </div>
 
     <script>
-        let currentResults = {
-            approved: [],
-            declined: [],
-            all: []
-        };
-
         function switchTab(tab) {
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.classList.remove('active');
@@ -390,57 +267,6 @@
             event.target.classList.add('active');
         }
 
-        async function checkSingle() {
-            const card = document.getElementById('single-card').value;
-            if (!card) {
-                alert('Por favor, insira um cartão válido');
-                return;
-            }
-
-            const resultDiv = document.getElementById('single-result');
-            const contentDiv = document.getElementById('single-result-content');
-            
-            resultDiv.style.display = 'block';
-            contentDiv.innerHTML = '<div class="spinner"></div><p>Verificando...</p>';
-            
-            try {
-                const response = await fetch('/api/check_single', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ card: card })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    const result = data.result;
-                    const statusClass = result.status.includes('APPROVED') ? 'approved' : 
-                                       (result.status.includes('3DS') ? 'three-ds' : 'declined');
-                    
-                    contentDiv.innerHTML = `
-                        <div class="result-item ${statusClass}">
-                            <div class="result-header">
-                                <span>${result.status}</span>
-                                <span>${result.time || ''}</span>
-                            </div>
-                            <div><strong>Cartão:</strong> ${result.card}</div>
-                            <div><strong>Resposta:</strong> ${result.response}</div>
-                            ${result.bin_info ? `
-                                <div class="result-details">
-                                    <div><strong>BIN:</strong> ${result.bin_info.brand || 'N/A'} | ${result.bin_info.bank || 'N/A'}</div>
-                                    <div><strong>País:</strong> ${result.bin_info.country_name || 'N/A'}</div>
-                                </div>
-                            ` : ''}
-                        </div>
-                    `;
-                } else {
-                    contentDiv.innerHTML = `<div class="result-item declined">❌ Erro: ${data.error}</div>`;
-                }
-            } catch (error) {
-                contentDiv.innerHTML = `<div class="result-item declined">❌ Erro de conexão: ${error.message}</div>`;
-            }
-        }
-
         async function startMassCheck() {
             const cardsText = document.getElementById('mass-cards').value;
             if (!cardsText.trim()) {
@@ -448,16 +274,10 @@
                 return;
             }
             
-            const progressDiv = document.getElementById('progress');
-            const statsDiv = document.getElementById('stats');
-            const resultsContainer = document.getElementById('results-container');
-            
-            progressDiv.classList.add('active');
-            statsDiv.style.display = 'flex';
-            resultsContainer.style.display = 'block';
-            
+            document.getElementById('progress').classList.add('active');
+            document.getElementById('stats').style.display = 'flex';
+            document.getElementById('results-container').style.display = 'block';
             document.getElementById('results-list').innerHTML = '';
-            currentResults = { approved: [], declined: [], all: [] };
             
             try {
                 const response = await fetch('/api/check_mass', {
@@ -469,55 +289,42 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    currentResults = data;
-                    
                     document.getElementById('total-count').textContent = data.total;
                     document.getElementById('approved-count').textContent = data.approved_count;
                     document.getElementById('declined-count').textContent = data.declined_count;
                     
-                    displayResults(data.all_results);
-                } else {
-                    alert('Erro: ' + data.error);
+                    const resultsList = document.getElementById('results-list');
+                    data.all_results.forEach(result => {
+                        const isApproved = result.status.includes('✅');
+                        const resultDiv = document.createElement('div');
+                        resultDiv.className = `result-item ${isApproved ? 'approved' : 'declined'}`;
+                        resultDiv.innerHTML = `
+                            <div class="result-header">
+                                <strong>${result.status}</strong>
+                                <span>${result.time}</span>
+                            </div>
+                            <div><strong>Cartão:</strong> ${result.card}</div>
+                            <div><strong>Resposta:</strong> ${result.response}</div>
+                            ${result.bin_info && result.bin_info.brand ? `
+                                <div style="font-size: 12px; color: #666; margin-top: 5px;">
+                                    BIN: ${result.bin_info.brand} | ${result.bin_info.bank || 'N/A'} | ${result.bin_info.country_name || 'N/A'}
+                                </div>
+                            ` : ''}
+                        `;
+                        resultsList.appendChild(resultDiv);
+                    });
                 }
             } catch (error) {
-                alert('Erro de conexão: ' + error.message);
+                alert('Erro: ' + error.message);
             } finally {
-                progressDiv.classList.remove('active');
+                document.getElementById('progress').classList.remove('active');
             }
-        }
-        
-        function displayResults(results) {
-            const resultsList = document.getElementById('results-list');
-            resultsList.innerHTML = '';
-            
-            results.forEach(result => {
-                const statusClass = result.status.includes('APPROVED') ? 'approved' : 
-                                   (result.status.includes('3DS') ? 'three-ds' : 'declined');
-                
-                const resultDiv = document.createElement('div');
-                resultDiv.className = `result-item ${statusClass}`;
-                resultDiv.innerHTML = `
-                    <div class="result-header">
-                        <span><strong>${result.status}</strong></span>
-                        <span>${result.time || ''}</span>
-                    </div>
-                    <div><strong>Cartão:</strong> ${result.card}</div>
-                    <div><strong>Resposta:</strong> ${result.response}</div>
-                    ${result.bin_info ? `
-                        <div class="result-details">
-                            <strong>BIN Info:</strong> ${result.bin_info.brand || 'N/A'} | ${result.bin_info.bank || 'N/A'} | ${result.bin_info.country_name || 'N/A'}
-                        </div>
-                    ` : ''}
-                `;
-                resultsList.appendChild(resultDiv);
-            });
         }
         
         function clearResults() {
             document.getElementById('results-list').innerHTML = '';
             document.getElementById('stats').style.display = 'none';
             document.getElementById('results-container').style.display = 'none';
-            currentResults = { approved: [], declined: [], all: [] };
         }
         
         async function addProxies() {
@@ -540,14 +347,7 @@
                 const contentDiv = document.getElementById('proxy-result-content');
                 
                 resultDiv.style.display = 'block';
-                contentDiv.innerHTML = `
-                    <div class="result-item approved">
-                        ✅ ${data.added} proxies adicionados!<br>
-                        ❌ ${data.invalid} inválidos<br>
-                        📊 Total: ${data.total}
-                    </div>
-                `;
-                
+                contentDiv.innerHTML = `<div class="result-item approved">✅ ${data.added} proxies adicionados! Total: ${data.total}</div>`;
                 document.getElementById('proxy-list').value = '';
             } catch (error) {
                 alert('Erro: ' + error.message);
@@ -556,27 +356,14 @@
         
         async function testProxies() {
             try {
-                const response = await fetch('/api/test_proxies', {
-                    method: 'POST'
-                });
-                
+                const response = await fetch('/api/test_proxies', { method: 'POST' });
                 const data = await response.json();
                 
                 const resultDiv = document.getElementById('proxy-result');
                 const contentDiv = document.getElementById('proxy-result-content');
                 
                 resultDiv.style.display = 'block';
-                if (data.success) {
-                    contentDiv.innerHTML = `
-                        <div class="result-item approved">
-                            ✅ ${data.working} proxies funcionando<br>
-                            ❌ ${data.failed} proxies falhos<br>
-                            📊 Testados: ${data.total}
-                        </div>
-                    `;
-                } else {
-                    contentDiv.innerHTML = `<div class="result-item declined">❌ ${data.error}</div>`;
-                }
+                contentDiv.innerHTML = `<div class="result-item approved">✅ ${data.working} proxies funcionando de ${data.total}</div>`;
             } catch (error) {
                 alert('Erro: ' + error.message);
             }
@@ -592,14 +379,12 @@
                 
                 resultDiv.style.display = 'block';
                 if (data.total > 0) {
-                    let proxiesList = '<div class="result-item approved">';
-                    proxiesList += `<strong>📊 Total de Proxies: ${data.total}</strong><br><br>`;
-                    proxiesList += '<strong>Primeiros 20 proxies:</strong><br>';
+                    let html = `<div class="result-item approved"><strong>📊 Total: ${data.total}</strong><br>`;
                     data.proxies.forEach(proxy => {
-                        proxiesList += `${proxy}<br>`;
+                        html += `${proxy}<br>`;
                     });
-                    proxiesList += '</div>';
-                    contentDiv.innerHTML = proxiesList;
+                    html += '</div>';
+                    contentDiv.innerHTML = html;
                 } else {
                     contentDiv.innerHTML = '<div class="result-item declined">❌ Nenhum proxy na lista</div>';
                 }
@@ -611,37 +396,16 @@
         async function deleteProxies() {
             if (confirm('Tem certeza que deseja deletar TODOS os proxies?')) {
                 try {
-                    const response = await fetch('/api/delete_proxies', {
-                        method: 'POST'
-                    });
-                    
-                    const data = await response.json();
-                    
+                    await fetch('/api/delete_proxies', { method: 'POST' });
                     const resultDiv = document.getElementById('proxy-result');
                     const contentDiv = document.getElementById('proxy-result-content');
-                    
                     resultDiv.style.display = 'block';
-                    contentDiv.innerHTML = `
-                        <div class="result-item approved">
-                            🗑️ ${data.deleted} proxies deletados com sucesso!
-                        </div>
-                    `;
+                    contentDiv.innerHTML = '<div class="result-item approved">🗑️ Todos os proxies foram deletados!</div>';
                 } catch (error) {
                     alert('Erro: ' + error.message);
                 }
             }
         }
-        
-        // Status check a cada 30 segundos
-        setInterval(async () => {
-            try {
-                const response = await fetch('/api/get_status');
-                const data = await response.json();
-                // Atualizar status se necessário
-            } catch (error) {
-                console.log('Status check failed');
-            }
-        }, 30000);
     </script>
 </body>
 </html>
